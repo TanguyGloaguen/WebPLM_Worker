@@ -1,6 +1,7 @@
 package server;
 
 import java.util.Locale;
+import java.util.concurrent.Semaphore;
 
 import plm.core.model.Game;
 import plm.core.model.LogHandler;
@@ -20,7 +21,7 @@ public class Main {
 	private final static String QUEUE_NAME_REPLY = "worker_out";
 	private final static LogHandler logger = new ServerLogHandler();
 	private static Game game = null;
-	public static boolean state;
+	public static Semaphore endExercise = new Semaphore(0);
 
 	public static void main(String[] argv) throws Exception {
 
@@ -40,6 +41,7 @@ public class Main {
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			BasicProperties props = delivery.getProperties();
+			System.out.println(props.getCorrelationId());
 		    BasicProperties replyProps = new BasicProperties
                     .Builder()
                     .correlationId(props.getCorrelationId())
@@ -52,11 +54,9 @@ public class Main {
 			BasicListener listener = new BasicListener(channelOut,  QUEUE_NAME_REPLY,  replyProps);
 			ResultListener resultLstn = new ResultListener(channelOut, QUEUE_NAME_REPLY, replyProps);
 			// Set game state
-			System.out.println(request.getLessonID());
 			game.switchLesson(request.getLessonID(), false);
 			game.switchExercise(request.getExerciseID());
 			// Bind listener to game
-			state = true;
 			listener.setWorld(game.getSelectedWorld());
 			resultLstn.setGame(game);
 			// Put code in compiler.
@@ -64,12 +64,7 @@ public class Main {
 			// Start the game.
 			game.startExerciseExecution();
 			// Delete the game instance.
-			while(state)
-				try {
-				    Thread.sleep(1000);                 //1000 milliseconds is one second.
-				} catch(InterruptedException ex) {
-				    Thread.currentThread().interrupt();
-				}
+			endExercise.acquire();
 			System.out.println("End compil");
 			game = null;
 		}

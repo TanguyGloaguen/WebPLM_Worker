@@ -57,7 +57,7 @@ public class ResultListener implements GameStateListener {
 	}
 	
 	public void notifyMain() {
-		main.state = false;
+		main.endExercise.release();
 	}
 	
 	public void send(int type, String msg) {
@@ -68,6 +68,6 @@ public class ResultListener implements GameStateListener {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-		System.out.println("Sent end comm. message");
+		System.out.println("Sent end comm. message (" + properties.getCorrelationId() + ")");
 	}
 }
