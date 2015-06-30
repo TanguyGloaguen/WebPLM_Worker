@@ -54,6 +54,8 @@ public class Main {
 			BasicListener listener = new BasicListener(channelOut,  QUEUE_NAME_REPLY,  replyProps);
 			ResultListener resultLstn = new ResultListener(channelOut, QUEUE_NAME_REPLY, replyProps);
 			// Set game state
+			System.out.println(request.getLessonID());
+			System.out.println(request.getExerciseID());
 			game.switchLesson(request.getLessonID(), false);
 			game.switchExercise(request.getExerciseID());
 			// Bind listener to game

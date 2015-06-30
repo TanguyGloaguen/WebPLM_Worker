@@ -2,6 +2,7 @@ package server.parser;
 
 import java.util.List;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import plm.universe.Operation;
@@ -11,27 +12,19 @@ public class StreamMsg {
 
 	String result = "";
 	public StreamMsg(World currWorld, List<Operation> operations) {
-		JSONObject obj = new JSONObject();
-		obj.put("world", currWorld.getName());
-/*		for(Operation op : operations) {
-			switch(buggleOperation) {
-		      case MoveBuggleOperation =>
-		        json = moveBuggleOperationWrite(moveBuggleOperation)
-		      case ChangeBuggleDirection =>
-		        json = changeBuggleDirectionWrite(changeBuggleDirection)
-		      case ChangeBuggleCarryBaggle =>
-		        json = changeBuggleCarryBaggleWrite(changeBuggleCarryBaggle)
-		      case ChangeBuggleBrushDown =>
-		        json = changeBuggleBrushDownWrite(changeBuggleBrushDown)  
-		      case _ =>
-		        json = Json.obj()
-		    }
-		} */
+		JSONObject json = new JSONObject();
+		JSONArray json_list = new JSONArray();
+		for(Operation operation : operations) {
+			JSONObject json_in = OperationParser.toJSON(operation);
+			json_list.add(json_in);
+		}
+		json.put("worldID", currWorld.getName());
+		json.put("operations", json_list);
+		result = json.toJSONString();
 	}
 
 	public String toJSON() {
-		// TODO Auto-generated method stub
-		return "Stream";
+		return result;
 	}
 
 }

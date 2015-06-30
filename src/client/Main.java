@@ -1,10 +1,7 @@
 package client;
 
-import java.util.Locale;
-
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;
@@ -34,11 +31,12 @@ public class Main {
 		channelIn.queueDeclare(QUEUE_NAME_REPLY, false, false, false, null);
 		String message = "{"
 				+ "\"user\":\"test\","
-				+ "\"lesson\":\"lessons.welcome\","
-				+ "\"exercise\":\"loopfor.LoopFor\","
+				+ "\"lesson\":\"welcome\","
+				+ "\"exercise\":\"welcome.lessons.welcome.environment.Environment\","
 				+ "\"language\":\"Java\","
-				+ "\"localization\":\"" + Locale.FRENCH.toLanguageTag() + "\","
+				+ "\"localization\":\"fr\","
 				+ "\"code\":\"public void run() { avance(); }\"}";
+
 		channelOut.basicPublish("", QUEUE_NAME_REQUEST, props,
 				message.getBytes("UTF-8"));
 		System.out.println(" [x] Sent '" + message + "'");
@@ -66,7 +64,7 @@ public class Main {
 					if(r.equals("0") || r.equals("1")) {
 						state = false;
 					}
-				} catch (ParseException e) {
+				} catch (Exception e) {
 					// NO OP
 				}
 			}
