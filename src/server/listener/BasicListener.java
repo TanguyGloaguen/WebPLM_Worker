@@ -61,6 +61,6 @@ public class BasicListener implements IWorldView {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-		System.out.println("Sent stream message");
+		System.out.println(" [D] Sent stream message (" + properties.getCorrelationId() + ")");
 	}
 }
