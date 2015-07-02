@@ -2,6 +2,8 @@ package server.listener;
 
 import java.io.IOException;
 
+import org.xnap.commons.i18n.I18n;
+
 import server.Main;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
@@ -20,22 +22,26 @@ public class ResultListener implements GameStateListener {
 	Channel channel;
 	String sendTo;
 	BasicProperties properties;
-	Main main;
 	
-	public ResultListener(Channel c, String s, BasicProperties p) {
+	public ResultListener(Channel c, String s) {
 		channel = c;
 		sendTo = s;
+	}
+	
+	public void setProps(BasicProperties p) {
 		properties = p;
 	}
 	
 	public void setGame(Game g) {
+		if(currGame != null)
+			currGame.removeGameStateListener(this);
 		currGame = g;
 		g.addGameStateListener(this);
 	}
 	
 	@Override
 	public ResultListener clone() {
-		ResultListener res = new ResultListener(channel, sendTo, properties);
+		ResultListener res = new ResultListener(channel, sendTo);
 		res.setGame(currGame);
 		return res;
 	}
@@ -46,9 +52,7 @@ public class ResultListener implements GameStateListener {
 			case DEMO_ENDED :
 			case EXECUTION_ENDED :
 				Exercise e = (Exercise) currGame.getCurrentLesson().getCurrentExercise();
-				int msgType = e.lastResult.outcome == ExecutionProgress.outcomeKind.PASS ? 1 : 0;
-				String msg = e.lastResult.getMsg(currGame.i18n);
-				send(msgType, msg);
+				send(e.lastResult, currGame.i18n);
 				notifyMain();
 				break;
 			default:
@@ -57,11 +61,11 @@ public class ResultListener implements GameStateListener {
 	}
 	
 	public void notifyMain() {
-		main.endExercise.release();
+		Main.endExercise.release();
 	}
 	
-	public void send(int type, String msg) {
-		ReplyMsg replyMsg = new ReplyMsg(type, msg);
+	public void send(ExecutionProgress exPro, I18n i18n) {
+		ReplyMsg replyMsg = new ReplyMsg(exPro, i18n);
 		String message = replyMsg.toJSON();
 		try {
 			channel.basicPublish("", sendTo, properties, message.getBytes("UTF-8"));

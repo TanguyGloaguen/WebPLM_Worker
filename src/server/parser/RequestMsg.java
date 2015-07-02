@@ -5,7 +5,6 @@ import org.json.simple.parser.*;
 
 public class RequestMsg {
 
-	private String userUUID;
 	private String lessonID;
 	private String exerciseID;
 	private String loc;
@@ -21,7 +20,6 @@ public class RequestMsg {
 		JSONParser p = new JSONParser();
 		try {
 			JSONObject replyJSON = (JSONObject) p.parse(s);
-			replyData.userUUID = (String) replyJSON.get("user");
 			replyData.lessonID = (String) replyJSON.get("lesson");
 			replyData.exerciseID = (String) replyJSON.get("exercise");
 			replyData.loc = (String) replyJSON.get("localization");
@@ -32,10 +30,6 @@ public class RequestMsg {
 			e.printStackTrace();
 		}
 		return replyData;
-	}
-	
-	public String getUserUUID() {
-		return userUUID;
 	}
 
 	public String getLessonID() {

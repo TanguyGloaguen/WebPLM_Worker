@@ -13,25 +13,30 @@ import server.parser.StreamMsg;
 
 public class BasicListener implements IWorldView {
 
-	private World currWorld;
+	private World currWorld = null;
 	Channel channel;
 	String sendTo;
 	BasicProperties properties;
 	
-	public BasicListener(Channel c, String s, BasicProperties p) {
+	public BasicListener(Channel c, String s) {
 		channel = c;
 		sendTo = s;
+	}
+	
+	public void setProps(BasicProperties p) {
 		properties = p;
 	}
 	
 	public void setWorld(World w) {
+		if(currWorld != null)
+			currWorld.removeWorldUpdatesListener(this);
 		currWorld = w;
 		currWorld.addWorldUpdatesListener(this);
 	}
 	
 	@Override
 	public BasicListener clone() {
-		BasicListener res = new BasicListener(channel, sendTo, properties);
+		BasicListener res = new BasicListener(channel, sendTo);
 		res.setWorld(currWorld);
 		return res;
 	}

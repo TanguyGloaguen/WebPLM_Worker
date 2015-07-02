@@ -5,6 +5,7 @@ import java.util.concurrent.Semaphore;
 
 import plm.core.model.Game;
 import plm.core.model.LogHandler;
+import plm.core.model.lesson.ExecutionProgress;
 import plm.core.model.lesson.Exercise;
 import server.listener.BasicListener;
 import server.listener.ResultListener;
@@ -34,6 +35,11 @@ public class Main {
 				channelOut = connection.createChannel();
 		channelIn.queueDeclare(QUEUE_NAME_REQUEST, false, false, false, null);
 		channelOut.queueDeclare(QUEUE_NAME_REPLY, false, false, false, null);
+		// Create game.
+		System.out.println(" [D] Creating game.");
+		game = new Game("test", logger, Locale.FRENCH,"Java" , false);
+		BasicListener listener = new BasicListener(channelOut,  QUEUE_NAME_REPLY);
+		ResultListener resultLstn = new ResultListener(channelOut, QUEUE_NAME_REPLY);
 		System.out.println(" [D] Waiting for request.");
 
 		QueueingConsumer consumer = new QueueingConsumer(channelIn);
@@ -42,20 +48,33 @@ public class Main {
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			BasicProperties props = delivery.getProperties();
-			System.out.println(props.getCorrelationId());
 		    BasicProperties replyProps = new BasicProperties
                     .Builder()
                     .correlationId(props.getCorrelationId())
                     .build();
 			String message = new String(delivery.getBody(),"UTF-8");
-			System.out.println(" [D] Received '" + message + "'. Processing request.");
+			System.out.println(" [D] Received request from '" + props.getCorrelationId() + "'.");
 			RequestMsg request = RequestMsg.readMessage(message);
-			// Create game.
-			System.out.println(" [D] Creating game.");
-			game = new Game(request.getUserUUID(), logger, Locale.forLanguageTag(request.getLocale()), request.getLanguage(), false);
-			BasicListener listener = new BasicListener(channelOut,  QUEUE_NAME_REPLY,  replyProps);
-			ResultListener resultLstn = new ResultListener(channelOut, QUEUE_NAME_REPLY, replyProps);
+			// Setting return data
+			listener.setProps(replyProps);
+			resultLstn.setProps(replyProps);
 			// Set game state
+			try {
+				Locale lang = Locale.forLanguageTag(request.getLocale());
+				game.setLocale(lang);
+			}
+			catch (Exception e) {
+				System.err.println(" [E] Error while setting Locale. (original message : '" + message + "'");
+				e.printStackTrace();
+			}
+			ExecutionProgress exPro;
+			try {
+				game.setProgrammingLanguage(request.getLanguage());
+			}
+			catch (Exception e) {
+				System.err.println(" [E] Error while setting Prog. Language. (original message : '" + message + "'");
+				e.printStackTrace();
+			}
 			game.switchLesson(request.getLessonID(), false);
 			game.switchExercise(request.getExerciseID());
 			// Bind listener to game
@@ -68,8 +87,7 @@ public class Main {
 			game.startExerciseExecution();
 			// Delete the game instance.
 			endExercise.acquire();
-			System.out.println(" [D] Ended compilation");
-			game = null;
+			System.out.println(" [D] Ended compilation.");
 		}
 	}
 }
