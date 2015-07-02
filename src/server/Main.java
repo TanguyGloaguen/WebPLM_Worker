@@ -24,7 +24,8 @@ public class Main {
 	public static Semaphore endExercise = new Semaphore(0);
 
 	public static void main(String[] argv) throws Exception {
-		String host = argv.length > 1 ? argv[0] : "localhost";
+		String host = argv.length >= 1 ? argv[0] : "localhost";
+		
 		System.out.println("Started Worker on queue server at : " + host);
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(host);
@@ -33,7 +34,7 @@ public class Main {
 				channelOut = connection.createChannel();
 		channelIn.queueDeclare(QUEUE_NAME_REQUEST, false, false, false, null);
 		channelOut.queueDeclare(QUEUE_NAME_REPLY, false, false, false, null);
-		System.out.println(" [D] Waiting for messages. To exit press CTRL+C");
+		System.out.println(" [D] Waiting for request.");
 
 		QueueingConsumer consumer = new QueueingConsumer(channelIn);
 		channelIn.basicConsume(QUEUE_NAME_REQUEST, true, consumer);
@@ -47,9 +48,10 @@ public class Main {
                     .correlationId(props.getCorrelationId())
                     .build();
 			String message = new String(delivery.getBody(),"UTF-8");
-			System.out.println(" [D] Received '" + message + "'");
+			System.out.println(" [D] Received '" + message + "'. Processing request.");
 			RequestMsg request = RequestMsg.readMessage(message);
 			// Create game.
+			System.out.println(" [D] Creating game.");
 			game = new Game(request.getUserUUID(), logger, Locale.forLanguageTag(request.getLocale()), request.getLanguage(), false);
 			BasicListener listener = new BasicListener(channelOut,  QUEUE_NAME_REPLY,  replyProps);
 			ResultListener resultLstn = new ResultListener(channelOut, QUEUE_NAME_REPLY, replyProps);
@@ -59,8 +61,8 @@ public class Main {
 			// Bind listener to game
 			listener.setWorld(game.getSelectedWorld());
 			resultLstn.setGame(game);
-			System.out.println(" [D] Starting compilation");
 			// Put code in compiler.
+			System.out.println(" [D] Starting compilation.");
 		    ((Exercise) game.getCurrentLesson().getCurrentExercise()).getSourceFile(game.getProgrammingLanguage(), 0).setBody(request.getCode());
 			// Start the game.
 			game.startExerciseExecution();

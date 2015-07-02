@@ -31,11 +31,11 @@ public class Main {
 		channelIn.queueDeclare(QUEUE_NAME_REPLY, false, false, false, null);
 		String message = "{"
 				+ "\"user\":\"test\","
-				+ "\"lesson\":\"welcome\","
+				+ "\"lesson\":\"lessons.welcome\","
 				+ "\"exercise\":\"welcome.lessons.welcome.environment.Environment\","
 				+ "\"language\":\"Java\","
 				+ "\"localization\":\"fr\","
-				+ "\"code\":\"public void run() { avance(); }\"}";
+				+ "\"code\":\"avance();\"}";
 
 		channelOut.basicPublish("", QUEUE_NAME_REQUEST, props,
 				message.getBytes("UTF-8"));
