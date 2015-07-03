@@ -3,6 +3,8 @@ package server.listener;
 import java.io.IOException;
 import java.util.List;
 
+import org.json.simple.JSONObject;
+
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 
@@ -47,7 +49,7 @@ public class BasicListener implements IWorldView {
 		for(Entity element : l) {
 			if(element.isReadyToSend()) {
 				StreamMsg streamMsg = new StreamMsg(currWorld, element.getOperations());
-				String message = streamMsg.toJSON();
+				JSONObject message = streamMsg.result();
 				element.getOperations().clear();
 				element.setReadyToSend(false);
 				send(message);
@@ -60,12 +62,18 @@ public class BasicListener implements IWorldView {
 		// TODO explain why it's empty.
 	}
 
-	private void send(String message) {
-		try {
-			channel.basicPublish("", sendTo, properties, message.getBytes("UTF-8"));
-		} catch (IOException ex) {
-			ex.printStackTrace();
+	private void send(JSONObject msgItem) {
+		String message = "";
+		if(timer < 500) {
+			
 		}
-		System.out.println(" [D] Sent stream message (" + properties.getCorrelationId() + ")");
+		else {
+			try {
+				channel.basicPublish("", sendTo, properties, message.getBytes("UTF-8"));
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+			System.out.println(" [D] Sent stream message (" + properties.getCorrelationId() + ")");
+		}
 	}
 }
