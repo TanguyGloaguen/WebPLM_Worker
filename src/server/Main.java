@@ -111,7 +111,6 @@ public class Main {
 				System.err.println(" [E] Error while setting Locale. (original message : '" + message + "'");
 				e.printStackTrace();
 			}
-			ExecutionProgress exPro;
 			try {
 				game.setProgrammingLanguage(request.getLanguage());
 			}
@@ -131,7 +130,10 @@ public class Main {
 			game.startExerciseExecution();
 			// Delete the game instance.
 			try {
-				endExercise.acquire();
+				if(!endExercise.tryAcquire(30, java.util.concurrent.TimeUnit.SECONDS)) {
+					game.stopExerciseExecution();
+				}
+					
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
