@@ -142,7 +142,9 @@ public class Main {
 	}
 
 	public static void main(String[] argv) {
-		host = argv.length >= 1 ? argv[0] : "localhost";
+		host = System.getenv("MESSAGEQ_PORT_5672_TCP_ADDR") != null
+				? System.getenv("MESSAGEQ_PORT_5672_TCP_ADDR")+":"+System.getenv("MESSAGEQ_PORT_5672_TCP_PORT")
+				: "localhost:5672";
 		initData();
 		mainLoop();
 	}
