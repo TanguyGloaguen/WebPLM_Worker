@@ -1,7 +1,10 @@
 package server;
 
 import plm.core.model.LogHandler;
-
+/**
+ * This is a dummy {@link LogHandler}, intended to not process any output from the PLM {@link plm.core.model.Game Game} engine.
+ * @see LogHandler
+ */
 public class ServerLogHandler extends LogHandler {
 
 	@Override

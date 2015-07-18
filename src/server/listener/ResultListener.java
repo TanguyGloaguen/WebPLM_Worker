@@ -16,6 +16,11 @@ import plm.core.model.lesson.ExecutionProgress;
 import plm.core.model.lesson.Exercise;
 import server.parser.ReplyMsg;
 
+/**
+ * The {@link GameStateListener} implementation. It reacts when the game state changes, notifying the {@link Main} class and the {@link BasicListener}.
+ * @author Tanguy
+ *
+ */
 public class ResultListener implements GameStateListener {
 
 	private Game currGame;
@@ -23,9 +28,14 @@ public class ResultListener implements GameStateListener {
 	String sendTo;
 	BasicProperties properties;
 	
-	public ResultListener(Channel c, String s) {
-		channel = c;
-		sendTo = s;
+	/**
+	 * The {@link ResultListener} constructor.
+	 * @param channel Channel the basicListener shoud push to.
+	 * @param sendTo The channel name. It should be the same that the one used while creating channel
+	 */
+	public ResultListener(Channel channel, String sendTo) {
+		this.channel = channel;
+		this.sendTo = sendTo;
 	}
 	
 	public void setProps(BasicProperties p) {

@@ -21,6 +21,11 @@ import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
 
+/**
+ * The main class. This should be the entry point of the Judge.
+ * @author Tanguy
+ *
+ */
 public class Main {
 	private final static String QUEUE_NAME_REQUEST = "worker_in";
 	private final static String QUEUE_NAME_REPLY = "worker_out";
@@ -35,16 +40,30 @@ public class Main {
 	private static Channel channelIn;
 	private static Channel channelOut;
 	
+	
+	/**
+	 * Calls for the last unprocessed stream message to be sent by the {@link BasicListener}.
+	 * Note that this function is locking.
+	 * @see BasicListener
+	 * @see ResultListener
+	 */
 	public static void askEndStreamMain() {
 		listener.send();
 	}
 	
+	/**
+	 * Release the game execution semaphore.
+	 * This function should be called ONLY when the GameStateListener has his state set to ENDED.
+	 */
 	public static void freeMain() {
 		endExercise.release();
 	}
 
+	/**
+	 * Initialize the connection with the message queue, as well as the {@link Game} instance.
+	 */
 	public static void initData() {
-		System.out.println("Started Worker on queue server at : " + host);
+		System.out.println(" [D] Attempting to connect to " + host + ":" + port);
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(host);
 		factory.setPort(Integer.parseInt(port));
@@ -55,30 +74,38 @@ public class Main {
 			channelOut = connection.createChannel();
 			channelIn.queueDeclare(QUEUE_NAME_REQUEST, false, false, false, null);
 			channelOut.queueDeclare(QUEUE_NAME_REPLY, false, false, false, null);
-			
+		} catch (IOException e) {
+			System.err.println(" [E] Host unknown. Aborting...");
+			System.exit(1);
+	    } catch (TimeoutException e) {
+			System.err.println(" [E] Host timed out. Aborting...");
+			System.exit(1);
+		}
+		try {
 			// Create game.
 			System.out.println(" [D] Creating game.");
 			game = new Game("test", logger, Locale.FRENCH,"Java" , false);
-			listener = new BasicListener(channelOut,  QUEUE_NAME_REPLY);
+			listener = new BasicListener(channelOut,  QUEUE_NAME_REPLY, 500);
 			resultLstn = new ResultListener(channelOut, QUEUE_NAME_REPLY);
-		} catch (IOException | TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			
+		}
+		catch (Exception e) {
+			System.err.println(" [E] Error while creating game. Aborting...");
 		}
 	}
 	
+	/**
+	 * This is the main loop of the system.
+	 */
 	public static void mainLoop() {
-
-		System.out.println(" [D] Waiting for request.");
+		System.out.println(" [D] Retrieving request handler.");
 		QueueingConsumer consumer = new QueueingConsumer(channelIn);
 		try {
 			channelIn.basicConsume(QUEUE_NAME_REQUEST, true, consumer);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
-			
 		}
+		System.out.println(" [D] Waiting for request.");
 		while (true) {
 			QueueingConsumer.Delivery delivery = null;
 			try {
@@ -130,7 +157,7 @@ public class Main {
 		    ((Exercise) game.getCurrentLesson().getCurrentExercise()).getSourceFile(game.getProgrammingLanguage(), 0).setBody(request.getCode());
 			// Start the game.
 			game.startExerciseExecution();
-			// Delete the game instance.
+			// Stop the game instance after 30s or wait until it stops
 			try {
 				if(!endExercise.tryAcquire(30, java.util.concurrent.TimeUnit.SECONDS)) {
 					game.stopExerciseExecution();
@@ -144,12 +171,10 @@ public class Main {
 	}
 
 	public static void main(String[] argv) {
-		host = System.getenv("MESSAGEQ_PORT_5672_TCP_ADDR") != null
-				? System.getenv("MESSAGEQ_PORT_5672_TCP_ADDR")
-				: "localhost";
-		port = System.getenv("MESSAGEQ_PORT_5672_TCP_PORT") != null
-				? System.getenv("MESSAGEQ_PORT_5672_TCP_PORT")
-				: "5672";
+		host = System.getenv("MESSAGEQ_PORT_5672_TCP_ADDR");
+		port = System.getenv("MESSAGEQ_PORT_5672_TCP_PORT");
+		host = host != null ? host : "localhost";
+		port = port != null ? port : "5672";
 		initData();
 		mainLoop();
 	}

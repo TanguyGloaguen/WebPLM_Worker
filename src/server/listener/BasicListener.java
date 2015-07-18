@@ -9,11 +9,20 @@ import org.json.simple.JSONObject;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 
+import plm.core.model.Game;
 import plm.universe.Entity;
 import plm.universe.IWorldView;
 import plm.universe.World;
 import server.parser.StreamMsg;
 
+/**
+ * The {@link IWorldView} implementation. Linked to the current {@link Game} instance, and is called every time the world moves. 
+ * <p>
+ * It does two things : first, it creates update chunks via {@link StreamMsg} to describe the world movement.
+ * It also aggregates these messages to send them to the given {@link Channel} at least past the given time delay.
+ * @author Tanguy
+ * @see StreamMsg
+ */
 public class BasicListener implements IWorldView {
 
 	private World currWorld = null;
@@ -21,28 +30,44 @@ public class BasicListener implements IWorldView {
 	String sendTo;
 	BasicProperties properties;
 	long execTime;
+	long timeout;
 	JSONArray accu;
 	
-	public BasicListener(Channel c, String s) {
-		channel = c;
-		sendTo = s;
+	/**
+	 * The {@link BasicListener} constructor.
+	 * @param channel Channel the basicListener shoud push to.
+	 * @param sendTo The channel name. It should be the same that the one used while creating channel
+	 * @param timeout The minimal time between two stream messages. Set to 0 to stream each operation individually.
+	 */
+	public BasicListener(Channel channel, String sendTo, long timeout) {
+		this.timeout = timeout;
+		this.channel = channel;
+		this.sendTo = sendTo;
 	}
 	
-	public void setProps(BasicProperties p) {
-		properties = p;
+	/**
+	 * Set the reply properties value. Also, reset the accumulation queue.
+	 * @param properties The properties sent with each message
+	 */
+	public void setProps(BasicProperties properties) {
+		this.properties = properties;
 		accu = new JSONArray();
 	}
 	
-	public void setWorld(World w) {
+	/**
+	 * Set or replaces the game world to listen to.
+	 * @param world
+	 */
+	public void setWorld(World world) {
 		if(currWorld != null)
 			currWorld.removeWorldUpdatesListener(this);
-		currWorld = w;
+		currWorld = world;
 		currWorld.addWorldUpdatesListener(this);
 	}
 	
 	@Override
 	public BasicListener clone() {
-		BasicListener res = new BasicListener(channel, sendTo);
+		BasicListener res = new BasicListener(channel, sendTo, timeout);
 		res.setWorld(currWorld);
 		return res;
 	}
@@ -66,16 +91,24 @@ public class BasicListener implements IWorldView {
 		// TODO explain why it's empty.
 	}
 
+	/**
+	 * Sends the given message, or accumulates it if the timeout isn't reached. This method is private.
+	 * @param msgItem the JSON message to be send.
+	 * @see StreamMsg
+	 */
 	@SuppressWarnings("unchecked")
 	private void send(JSONObject msgItem) {
 		long timer = System.currentTimeMillis() - this.execTime;
 		accu.add(msgItem);
-		if(timer > 500) {
+		if(timer > timeout) {
 			this.execTime = System.currentTimeMillis();
 			send();
 		}
 	}
 	
+	/**
+	 * Sends all accumulated messages.
+	 */
 	public void send() {
 		String message = accu.toJSONString();
 		try {
