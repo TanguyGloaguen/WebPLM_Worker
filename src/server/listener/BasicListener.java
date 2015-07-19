@@ -114,7 +114,7 @@ public class BasicListener implements IWorldView {
 		JSONObject msgJson = new JSONObject();
 		msgJson.put("type", "stream");
 		msgJson.put("content", accu);
-		String message = accu.toJSONString();
+		String message = msgJson.toJSONString();
 		try {
 			channel.basicPublish("", sendTo, properties, message.getBytes("UTF-8"));
 		} catch (IOException ex) {

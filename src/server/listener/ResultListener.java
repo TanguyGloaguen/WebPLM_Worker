@@ -27,15 +27,18 @@ public class ResultListener implements GameStateListener {
 	Channel channel;
 	String sendTo;
 	BasicProperties properties;
+	BasicListener listener;
 	
 	/**
 	 * The {@link ResultListener} constructor.
 	 * @param channel Channel the basicListener shoud push to.
 	 * @param sendTo The channel name. It should be the same that the one used while creating channel
+	 * @param lstn The basic listener to activate for stream end.
 	 */
-	public ResultListener(Channel channel, String sendTo) {
+	public ResultListener(Channel channel, String sendTo, BasicListener lstn) {
 		this.channel = channel;
 		this.sendTo = sendTo;
+		this.listener = lstn;
 	}
 	
 	public void setProps(BasicProperties p) {
@@ -51,7 +54,7 @@ public class ResultListener implements GameStateListener {
 	
 	@Override
 	public ResultListener clone() {
-		ResultListener res = new ResultListener(channel, sendTo);
+		ResultListener res = new ResultListener(channel, sendTo, listener);
 		res.setGame(currGame);
 		return res;
 	}
@@ -62,7 +65,7 @@ public class ResultListener implements GameStateListener {
 			case DEMO_ENDED :
 			case EXECUTION_ENDED :
 				Exercise e = (Exercise) currGame.getCurrentLesson().getCurrentExercise();
-				Main.askEndStreamMain();
+				listener.send();
 				send(e.lastResult, currGame.i18n);
 				Main.freeMain();
 				break;

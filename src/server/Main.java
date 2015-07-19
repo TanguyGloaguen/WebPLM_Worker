@@ -40,17 +40,6 @@ public class Main {
 	private static Channel channelIn;
 	private static Channel channelOut;
 	
-	
-	/**
-	 * Calls for the last unprocessed stream message to be sent by the {@link BasicListener}.
-	 * Note that this function is locking.
-	 * @see BasicListener
-	 * @see ResultListener
-	 */
-	public static void askEndStreamMain() {
-		listener.send();
-	}
-	
 	/**
 	 * Release the game execution semaphore.
 	 * This function should be called ONLY when the GameStateListener has his state set to ENDED.
@@ -86,7 +75,7 @@ public class Main {
 			System.out.println(" [D] Creating game.");
 			game = new Game("test", logger, Locale.FRENCH,"Java" , false);
 			listener = new BasicListener(channelOut,  QUEUE_NAME_REPLY, 500);
-			resultLstn = new ResultListener(channelOut, QUEUE_NAME_REPLY);
+			resultLstn = new ResultListener(channelOut, QUEUE_NAME_REPLY, listener);
 		}
 		catch (Exception e) {
 			System.err.println(" [E] Error while creating game. Aborting...");
