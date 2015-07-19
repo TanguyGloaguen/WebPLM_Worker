@@ -79,6 +79,7 @@ public class ChannelTest implements Channel {
 	}
 
 	@Override
+	@Deprecated
 	public void addFlowListener(FlowListener arg0) {
 		// TODO Auto-generated method stub
 		
@@ -210,6 +211,7 @@ public class ChannelTest implements Channel {
 	}
 
 	@Override
+	@Deprecated
 	public void clearFlowListeners() {
 		// TODO Auto-generated method stub
 		
@@ -334,6 +336,7 @@ public class ChannelTest implements Channel {
 	}
 
 	@Override
+	@Deprecated
 	public boolean flowBlocked() {
 		// TODO Auto-generated method stub
 		return false;
@@ -454,6 +457,7 @@ public class ChannelTest implements Channel {
 	}
 
 	@Override
+	@Deprecated
 	public boolean removeFlowListener(FlowListener arg0) {
 		// TODO Auto-generated method stub
 		return false;
