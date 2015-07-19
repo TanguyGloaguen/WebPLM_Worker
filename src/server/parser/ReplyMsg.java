@@ -55,6 +55,7 @@ public class ReplyMsg {
 		res.put("msgType", type);
 		res.put("msg", msg);
 		res.put("git_logs", gitReply);
+		res.put("type", "result");
 		result = res.toJSONString();
 	}
 	

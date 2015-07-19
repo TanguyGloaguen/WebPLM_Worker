@@ -109,7 +109,11 @@ public class BasicListener implements IWorldView {
 	/**
 	 * Sends all accumulated messages.
 	 */
+	@SuppressWarnings("unchecked")
 	public void send() {
+		JSONObject msgJson = new JSONObject();
+		msgJson.put("type", "stream");
+		msgJson.put("content", accu);
 		String message = accu.toJSONString();
 		try {
 			channel.basicPublish("", sendTo, properties, message.getBytes("UTF-8"));
