@@ -13,6 +13,7 @@ import plm.core.model.Game;
 import plm.universe.Entity;
 import plm.universe.IWorldView;
 import plm.universe.World;
+import server.Connector;
 import server.parser.StreamMsg;
 
 /**
@@ -35,14 +36,19 @@ public class BasicListener implements IWorldView {
 	
 	/**
 	 * The {@link BasicListener} constructor.
-	 * @param channel Channel the basicListener shoud push to.
-	 * @param sendTo The channel name. It should be the same that the one used while creating channel
+	 * @param connector the used connector
 	 * @param timeout The minimal time between two stream messages. Set to 0 to stream each operation individually.
 	 */
-	public BasicListener(Channel channel, String sendTo, long timeout) {
+	public BasicListener(Connector connector, long timeout) {
 		this.timeout = timeout;
-		this.channel = channel;
-		this.sendTo = sendTo;
+		this.channel = connector.cOut();
+		this.sendTo = connector.cOutName();
+	}
+	
+	private BasicListener(Channel c, String sTo, long t) {
+		this.timeout = t;
+		this.channel = c;
+		this.sendTo = sTo;
 	}
 	
 	/**
@@ -67,9 +73,10 @@ public class BasicListener implements IWorldView {
 	
 	@Override
 	public BasicListener clone() {
-		BasicListener res = new BasicListener(channel, sendTo, timeout);
-		res.setWorld(currWorld);
-		return res;
+		BasicListener copy = new BasicListener(channel, sendTo, timeout);
+		copy.setProps(properties);
+		copy.setWorld(currWorld);
+		return copy;
 	}
 	
 	@Override

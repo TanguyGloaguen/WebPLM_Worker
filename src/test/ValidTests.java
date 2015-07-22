@@ -3,6 +3,8 @@ package test;
 import java.util.Locale;
 import java.lang.reflect.*;
 
+import server.Connector;
+import server.GameGest;
 import server.Main;
 
 import com.rabbitmq.client.Channel;
@@ -16,45 +18,44 @@ import server.listener.BasicListener;
 import server.listener.ResultListener;
 
 public class ValidTests {
-	private final static LogHandler logger = new ServerLogHandler();
-	private static Game game = null;
-	private static BasicListener listener;
-	private static ResultListener resultLstn;
-	private static Channel channelOut = new ChannelTest();
+	private static GameGest gest = null;
+	private static ConnectorTest connector = new ConnectorTest();
+	private static int testID = 1;
 	public void init() {
-		game = new Game("test", logger, Locale.FRENCH, "Java" , false);
-		listener = new BasicListener(channelOut,  "chanOut", 500);
-		resultLstn = new ResultListener(channelOut, "chanOut", listener);
+		connector.init("kappa", 1000);
+		gest = new GameGest(connector);
 		BasicProperties replyProps = new BasicProperties
                 .Builder()
                 .correlationId("TestCorrID")
                 .build();
-		
-		listener.setProps(replyProps);
-		resultLstn.setProps(replyProps);
+		gest.setProperties(replyProps);
 	}
 	
 	public int initWithParams(String lessID, String exID, String code) {
+		logInfos("Test "+ (testID++), lessID, exID, code);
 		init();
-		game.switchLesson(lessID, false);
-		game.switchExercise(exID);
-		listener.setWorld(game.getSelectedWorld());
-		resultLstn.setGame(game);
-	    ((Exercise) game.getCurrentLesson().getCurrentExercise()).getSourceFile(game.getProgrammingLanguage(), 0).setBody(code);
-		game.startExerciseExecution();
-		// Stop the game instance after 30s or wait until it stops
-		try {
-			if(!Main.endExercise.tryAcquire(30, java.util.concurrent.TimeUnit.SECONDS)) {
-				game.stopExerciseExecution();
-			}
-				
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		gest.setGameState(Locale.FRENCH, "Java", lessID, exID);
+		gest.setCode(code);
+		gest.startGame(30);
 		return 1;
 	}
 
 	public static void main(String[] args) {
+		System.out.println(" [T] Starting tests.");
 		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
+		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
+		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
+		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
+		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
+		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
+	}
+	
+	public static void logInfos(String testName, String lessID, String exID, String code) {
+		System.out.println("\n----------------------------");
+		System.out.println(" [T] " + testName);
+		System.out.println(" [T] lesson\t: " + lessID);
+		System.out.println(" [T] exercise\t: " + exID);
+		System.out.println(" [T] " + code);
+		System.out.println("----------------------------");
 	}
 }

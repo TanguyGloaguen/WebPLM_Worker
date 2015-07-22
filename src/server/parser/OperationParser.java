@@ -1,11 +1,19 @@
 package server.parser;
 
+import java.awt.BufferCapabilities.FlipContents;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import plm.universe.GridWorldCellOperation;
 import plm.universe.Operation;
+import lessons.sort.baseball.operations.*;
+import plm.universe.bat.*;
 import plm.universe.bugglequest.*;
+import lessons.sort.dutchflag.operations.*;
+import plm.universe.GridWorldCellOperation;
+import lessons.recursion.hanoi.operations.*;
+import lessons.sort.pancake.universe.operations.*;
+import plm.universe.sort.operations.*;
 
 /**
  * The {@link Operation} to {@link JSONObject} conversion tool.
@@ -32,25 +40,65 @@ public abstract class OperationParser {
 	private static class Router {
 		public static JSONObject toJSON(Operation o) {
 			JSONObject r;
-			if(o instanceof BuggleOperation)
+			if(o instanceof BaseballOperation)
+				r = Baseball.toJSON((BaseballOperation) o);
+			else if(o instanceof BatOperation)
+				r = Bat.toJSON((BatOperation) o);
+			else if(o instanceof BuggleOperation)
 				r = Buggle.toJSON((BuggleOperation) o);
+			else if(o instanceof DutchFlagOperation)
+				r = DutchFlag.toJSON((DutchFlagOperation) o);
 			else if(o instanceof GridWorldCellOperation)
 				r = toJSON((GridWorldCellOperation) o);
+			else if(o instanceof HanoiOperation)
+				r = Hanoi.toJSON((HanoiOperation) o);
+			else if(o instanceof PancakeOperation)
+				r = Pancake.toJSON((PancakeOperation) o);
+			else if(o instanceof SortOperation)
+				r = Sort.toJSON((SortOperation) o);
 			else r = new JSONObject();
 			r.put("type", o.getName());
 			r.put("msg", o.getMsg());
 			return r;
 		}
-		private static JSONObject toJSON(GridWorldCellOperation o) {
-			JSONObject r;
-			if(o instanceof BuggleWorldCellOperation)
-				r = BuggleWorldCell.toJSON((BuggleWorldCellOperation) o);
-			else r = new JSONObject();
-			JSONObject cell = new JSONObject();
-			cell.put("x", o.getCell().getX());
-			cell.put("y", o.getCell().getY());
-			r.put("cell", cell);
-			return r;
+// Baseball operations
+		private static class Baseball {
+			private static JSONObject toJSON(BaseballOperation o) {
+				JSONObject res;
+				if(o instanceof MoveOperation)
+					res = toJSON((MoveOperation) o);
+				else
+					res = new JSONObject();
+				res.put("baseballID", o.getEntity().getName());
+				return res;
+			}
+			
+			private static JSONObject toJSON(MoveOperation o) {
+				JSONObject res = new JSONObject();
+				res.put("base", o.getBase());
+				res.put("position", o.getPosition());
+				res.put("oldBase", o.getOldBase());
+				res.put("oldPosition", o.getOldPosition());
+				return res;
+			}
+		}
+// Bat operations
+		private static class Bat {
+			private static JSONObject toJSON(BatOperation o) {
+				JSONObject res = new JSONObject();
+				JSONArray resArray = new JSONArray();
+				for(Object t : o.getBatWorld().getTests().toArray()) {
+					JSONObject resElem = new JSONObject();
+					resElem.put("test", ((BatTest) t).formatAsString());
+					resElem.put("answered", ((BatTest) t).isAnswered());
+					resElem.put("correct", ((BatTest) t).isCorrect());
+					resElem.put("visible", ((BatTest) t).isVisible());
+					resArray.add(resElem);
+				}
+				res.put("type", "BatWorld");
+				res.put("batTests", resArray);
+				return res;
+			}
 		}
 // BuggleWorldCell operations
 		/**
@@ -163,6 +211,130 @@ public abstract class OperationParser {
 				res.put("oldDirection", o.getOldDirection().intValue());
 				res.put("newDirection", o.getNewDirection().intValue());
 				res.put("operation", "ChangeBuggleDirection");
+				return res;
+			}
+		}
+// DutchFlag operations
+		private static class DutchFlag {
+			private static JSONObject toJSON(DutchFlagOperation o) {
+				JSONObject res;
+				if(o instanceof DutchFlagSwap)
+					res = toJSON((DutchFlagSwap) o);
+				else
+					res = new JSONObject();
+				res.put("dutchFlagID", o.getEntity().getName());
+				return res;
+			}
+			
+			private static JSONObject toJSON(DutchFlagSwap o) {
+				JSONObject res = new JSONObject();
+				res.put("destination", o.getDestination());
+				res.put("source", o.getSource());
+				return res;
+			}
+		}
+// GridWorldCell operation
+		private static JSONObject toJSON(GridWorldCellOperation o) {
+			JSONObject r;
+			if(o instanceof BuggleWorldCellOperation)
+				r = BuggleWorldCell.toJSON((BuggleWorldCellOperation) o);
+			else r = new JSONObject();
+			JSONObject cell = new JSONObject();
+			cell.put("x", o.getCell().getX());
+			cell.put("y", o.getCell().getY());
+			r.put("cell", cell);
+			return r;
+		}
+// Hanoi operation
+		private static class Hanoi {
+			private static JSONObject toJSON(HanoiOperation o) {
+				JSONObject res;
+				if(o instanceof HanoiMove)
+					res = toJSON((HanoiMove) o);
+				else
+					res = new JSONObject();
+				res.put("hanoiID", o.getEntity().getName());
+				return res;
+			}
+			
+			private static JSONObject toJSON(HanoiMove o) {
+				JSONObject res = new JSONObject();
+				res.put("source", o.getSource());
+				res.put("destination", o.getDestination());
+				return res;
+			}
+		}
+// Pancake operation
+		private static class Pancake {
+			private static JSONObject toJSON(PancakeOperation o) {
+				JSONObject res;
+				if(o instanceof FlipOperation)
+					res = toJSON((FlipOperation) o);
+				else
+					res = new JSONObject();
+				res.put("pancakeID", o.getEntity().getName());
+				return res;
+			}
+			private static JSONObject toJSON(FlipOperation o) {
+				JSONObject res = new JSONObject();
+				res.put("number", o.getNumber());
+				return res;
+			}
+		}
+// Sort operations
+		private static class Sort {
+			private static JSONObject toJSON(SortOperation o) {
+				JSONObject res;
+				if(o instanceof SetValOperation)
+					res = toJSON((SetValOperation) o);
+				else if(o instanceof SwapOperation)
+					res = toJSON((SwapOperation) o);
+				else if(o instanceof CopyOperation)
+					res = toJSON((CopyOperation) o);
+				else if(o instanceof CountOperation)
+					res = toJSON((CountOperation) o);
+				else if(o instanceof GetValueOperation)
+					res = toJSON((GetValueOperation) o);
+				else res = new JSONObject();
+				res.put("sortID", o.getEntity().getName());
+				return res;
+			}
+			
+			private static JSONObject toJSON(SetValOperation o) {
+				JSONObject res = new JSONObject();
+				res.put("value", o.getValue());
+				res.put("oldValue",  o.getOldValue());
+				res.put("position", o.getPosition());
+				return res;
+			}
+			
+			private static JSONObject toJSON(SwapOperation o) {
+				JSONObject res = new JSONObject();
+				res.put("destination", o.getDestination());
+				res.put("source", o.getSource());
+				return res;
+			}
+			
+			private static JSONObject toJSON(CopyOperation o) {
+				JSONObject res = new JSONObject();
+				res.put("destination", o.getDestination());
+				res.put("source", o.getSource());
+				res.put("oldValue", o.getOldValue());
+				return res;
+			}
+			
+			private static JSONObject toJSON(CountOperation o) {
+				JSONObject res = new JSONObject();
+				res.put("read", o.getRead());
+				res.put("write", o.getWrite());
+				res.put("oldRead", o.getOldRead());
+				res.put("oldWrite", o.getOldWrite());
+				return res;
+			}
+			
+			private static JSONObject toJSON(GetValueOperation o) {
+				JSONObject res = new JSONObject();
+				res.put("position", o.getPosition());
 				return res;
 			}
 		}

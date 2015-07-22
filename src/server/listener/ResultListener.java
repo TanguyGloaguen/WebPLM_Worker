@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.xnap.commons.i18n.I18n;
 
+import server.Connector;
+import server.GameGest;
 import server.Main;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
@@ -27,18 +29,23 @@ public class ResultListener implements GameStateListener {
 	Channel channel;
 	String sendTo;
 	BasicProperties properties;
-	BasicListener listener;
+	GameGest parent;
 	
 	/**
 	 * The {@link ResultListener} constructor.
-	 * @param channel Channel the basicListener shoud push to.
-	 * @param sendTo The channel name. It should be the same that the one used while creating channel
+	 * @param connector the used connector
 	 * @param lstn The basic listener to activate for stream end.
 	 */
-	public ResultListener(Channel channel, String sendTo, BasicListener lstn) {
-		this.channel = channel;
-		this.sendTo = sendTo;
-		this.listener = lstn;
+	public ResultListener(Connector connector, GameGest parent) {
+		this.channel = connector.cOut();
+		this.sendTo = connector.cOutName();
+		this.parent = parent;
+	}
+	
+	private ResultListener(Channel c, String sTo, GameGest parent) {
+		this.channel = c;
+		this.sendTo = sTo;
+		this.parent = parent;
 	}
 	
 	public void setProps(BasicProperties p) {
@@ -54,9 +61,10 @@ public class ResultListener implements GameStateListener {
 	
 	@Override
 	public ResultListener clone() {
-		ResultListener res = new ResultListener(channel, sendTo, listener);
-		res.setGame(currGame);
-		return res;
+		ResultListener copy = new ResultListener(channel, sendTo, parent);
+		copy.setProps(properties);
+		copy.setGame(currGame);
+		return this;
 	}
 
 	@Override
@@ -65,9 +73,9 @@ public class ResultListener implements GameStateListener {
 			case DEMO_ENDED :
 			case EXECUTION_ENDED :
 				Exercise e = (Exercise) currGame.getCurrentLesson().getCurrentExercise();
-				listener.send();
+				parent.sendStream();
 				send(e.lastResult, currGame.i18n);
-				Main.freeMain();
+				parent.free();
 				break;
 			default:
 				break;
