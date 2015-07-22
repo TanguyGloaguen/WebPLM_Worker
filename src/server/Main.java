@@ -77,11 +77,13 @@ public class Main {
 			RequestMsg request = RequestMsg.readMessage(message);
 			// Setting return data
 			gest.setProperties(replyProps);
+			System.out.println(" [D] Setting game properties.");
 			// Set game state
 			gest.setGameState(Locale.forLanguageTag(request.getLocale()), request.getLanguage(), request.getLessonID(), request.getExerciseID());
 			// Put code in compiler.
 			System.out.println(" [D] Starting compilation.");
 			gest.setCode(request.getCode());
+			System.out.println(" [D] Starting execution.");
 			// Start the game.
 			gest.startGame(30);
 			System.out.println(" [D] Ended compilation.");
