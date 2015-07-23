@@ -1,5 +1,6 @@
 package server;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.Semaphore;
@@ -15,17 +16,20 @@ import server.listener.BasicListener;
 import server.listener.ResultListener;
 
 public class GameGest {
-	private final LogHandler logger = new ServerLogHandler();
 	private Game game;
 	private BasicListener listener;
 	private ResultListener resultLstn;
+	private ListenerOutStream listenerOut;
 	public Semaphore endExercise = new Semaphore(0);
 	private ArrayList<BasicListener> lCumul = new ArrayList<BasicListener>();
 	
-	public GameGest(Connector connector) {
+	public GameGest(Connector connector, LogHandler logger) {
 		game = new Game("test", logger, Locale.FRENCH,"Java" , false);
 		listener = new BasicListener(connector, 500);
 		resultLstn = new ResultListener(connector, this);
+		listenerOut = new ListenerOutStream(System.out, listener);
+		PrintStream outStream = new PrintStream(listenerOut, true);  //Direct to MyOutputStream, autoflush
+        System.setOut(outStream); 
 	}
 	
 	public void setGameState(Locale locale, String language, String lessonID, String exerciseID) {

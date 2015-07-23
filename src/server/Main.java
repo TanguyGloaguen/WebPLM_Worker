@@ -27,6 +27,7 @@ import com.rabbitmq.client.ShutdownSignalException;
  *
  */
 public class Main {
+	public static final LogHandler logger = new ServerLogHandler();
 	private static String host;
 	private static String port;
 	
@@ -42,7 +43,7 @@ public class Main {
 	 * Initialize the connection with the message queue, as well as the {@link Game} instance.
 	 */
 	public static void initData() {
-		System.out.println(" [D] Attempting to connect to " + host + ":" + port);
+		logger.log(0, "Attempting to connect to " + host + ":" + port);
 		connector.init(host, Integer.parseInt(port));
 	}
 	
@@ -50,16 +51,16 @@ public class Main {
 	 * This is the main loop of the system.
 	 */
 	public static void mainLoop() {
-		System.out.println(" [D] Retrieving request handler.");
+		logger.log(0, "Retrieving request handler.");
 		connector.prepDelivery();
-		System.out.println(" [D] Waiting for request.");
+		logger.log(0, "Waiting for request.");
 		while (true) {
 			try {
-				System.out.println(" [D] Creating game.");
-				gest = new GameGest(connector);
+				logger.log(0, "Creating game.");
+				gest = new GameGest(connector, logger);
 			}
 			catch (Exception e) {
-				System.err.println(" [E] Error while creating game. Aborting...");
+				logger.log(2, "Error while creating game. Aborting...");
 			}
 			QueueingConsumer.Delivery delivery = connector.getDelivery();
 			BasicProperties props = delivery.getProperties();
@@ -73,20 +74,20 @@ public class Main {
 			} catch (UnsupportedEncodingException e1) {
 				e1.printStackTrace();
 			}
-			System.out.println(" [D] Received request from '" + props.getCorrelationId() + "'.");
+			logger.log(0, "Received request from '" + props.getCorrelationId() + "'.");
 			RequestMsg request = RequestMsg.readMessage(message);
-			System.out.println(" [D] Setting game properties.");
+			logger.log(0, "Setting game properties.");
 			// Set game state
 			gest.setGameState(Locale.forLanguageTag(request.getLocale()), request.getLanguage(), request.getLessonID(), request.getExerciseID());
 			// Setting return data
 			gest.setProperties(replyProps);
 			// Put code in compiler.
-			System.out.println(" [D] Starting compilation.");
+			logger.log(0, "Starting compilation.");
 			gest.setCode(request.getCode());
-			System.out.println(" [D] Starting execution.");
+			logger.log(0, "Starting execution.");
 			// Start the game.
 			gest.startGame(30);
-			System.out.println(" [D] Ended compilation.");
+			logger.log(0, "Ended compilation.");
 			gest.stop();
 		}
 	}

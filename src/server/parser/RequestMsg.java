@@ -3,6 +3,8 @@ package server.parser;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 
+import server.Main;
+
 /**
  * Parses a JSON request message (in the form of a {@link String}) into 
  * @author Tanguy
@@ -36,7 +38,7 @@ public class RequestMsg {
 			replyData.lang = (String) replyJSON.get("language");
 			replyData.code = (String) replyJSON.get("code");
 		} catch (ParseException e) {
-			System.err.println("Parse exception : message in queue didn't fit the expected format.");
+			Main.logger.log(2, "Parse exception : message in queue didn't fit the expected format.");
 			e.printStackTrace();
 		}
 		return replyData;

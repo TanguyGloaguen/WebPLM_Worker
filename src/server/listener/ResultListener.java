@@ -90,6 +90,6 @@ public class ResultListener implements GameStateListener {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-		System.out.println(" [D] Sent end comm. message (" + properties.getCorrelationId() + ")");
+		Main.logger.log(0, "Sent end comm. message (" + properties.getCorrelationId() + ")");
 	}
 }

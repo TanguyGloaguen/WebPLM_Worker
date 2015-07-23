@@ -2,6 +2,8 @@ package test;
 
 import java.util.Locale;
 import server.GameGest;
+import server.Main;
+
 import com.rabbitmq.client.AMQP.BasicProperties;
 
 
@@ -11,7 +13,7 @@ public class ValidTests {
 	private static int testID = 1;
 	public void init() {
 		connector.init("kappa", 1000);
-		gest = new GameGest(connector);
+		gest = new GameGest(connector, Main.logger);
 		BasicProperties replyProps = new BasicProperties
                 .Builder()
                 .correlationId("TestCorrID")
@@ -29,17 +31,18 @@ public class ValidTests {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(" [T] Starting tests.");
+		Main.logger.log(-1, "Starting tests.");
 		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
+		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "System.out.println(\"Test\");avance();");
 		new ValidTests().initWithParams("lessons.sort.basic", "lessons.sort.basic", "public void bubbleSort()  {boolean stop = false; while(!stop) { stop = true; for(int i = 0; i < getValueCount()-1;i++) { if(isSmaller(i+1, i)) { swap(i+1, i); stop = false;}}}}");
 	}
 	
 	public static void logInfos(String testName, String lessID, String exID, String code) {
-		System.out.println("\n----------------------------");
-		System.out.println(" [T] " + testName);
-		System.out.println(" [T] lesson\t: " + lessID);
-		System.out.println(" [T] exercise\t: " + exID);
-		System.out.println(" [T] " + code);
-		System.out.println("----------------------------");
+		Main.logger.log(-1, "\n----------------------------");
+		Main.logger.log(-1, testName);
+		Main.logger.log(-1, "lesson\t: " + lessID);
+		Main.logger.log(-1, "exercise\t: " + exID);
+		Main.logger.log(-1, code);
+		Main.logger.log(-1, "----------------------------");
 	}
 }

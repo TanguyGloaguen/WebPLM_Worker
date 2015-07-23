@@ -27,6 +27,7 @@ import com.rabbitmq.client.AMQP.Tx.CommitOk;
 import com.rabbitmq.client.AMQP.Tx.RollbackOk;
 
 import server.Connector;
+import server.Main;
 
 public class ConnectorTest extends Connector {
 	
@@ -106,7 +107,7 @@ public class ConnectorTest extends Connector {
 	
 		@Override
 		public void basicAck(long arg0, boolean arg1) throws IOException {
-			System.out.println(" [C] ACK on : " + arg0);
+			Main.logger.log(-1, "ACK on : " + arg0);
 		}
 	
 		@Override
@@ -154,14 +155,14 @@ public class ConnectorTest extends Connector {
 	
 		@Override
 		public void basicNack(long arg0, boolean arg1, boolean arg2) throws IOException {
-			System.out.println(" [C] NACK on : " + arg0);
+			Main.logger.log(-1, "NACK on : " + arg0);
 		}
 	
 		@Override
 		public void basicPublish(String arg0, String arg1, BasicProperties arg2, byte[] arg3) throws IOException {
 			String msg = (new String(arg3,"UTF-8"));
-			System.out.println(" [C] Sent : " + msg.substring(0, msg.length()>100?100:msg.length()));
-			System.out.println(" [C] On : " + arg1);
+			Main.logger.log(-1, "Sent : " + msg.substring(0, msg.length()>100?100:msg.length()));
+			Main.logger.log(-1, "On : " + arg1);
 		}
 	
 		@Override

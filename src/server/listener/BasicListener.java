@@ -14,6 +14,7 @@ import plm.universe.Entity;
 import plm.universe.IWorldView;
 import plm.universe.World;
 import server.Connector;
+import server.Main;
 import server.parser.StreamMsg;
 
 /**
@@ -99,6 +100,18 @@ public class BasicListener implements IWorldView {
 	}
 
 	/**
+	 * 
+	 * @param msg the message to send as MessageStream
+	 */
+	@SuppressWarnings("unchecked")
+	public void streamOut(String msg) {
+		JSONObject res = new JSONObject();
+		res.put("type", "outputStream");
+		res.put("msg", msg);
+		send(res);
+	}
+	
+	/**
 	 * Sends the given message, or accumulates it if the timeout isn't reached. This method is private.
 	 * @param msgItem the JSON message to be send.
 	 * @see StreamMsg
@@ -127,6 +140,6 @@ public class BasicListener implements IWorldView {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-		System.out.println(" [D] Sent stream message (" + properties.getCorrelationId() + ")");
+		Main.logger.log(0, "Sent stream message (" + properties.getCorrelationId() + ")");
 	}
 }

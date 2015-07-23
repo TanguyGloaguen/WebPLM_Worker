@@ -1,7 +1,5 @@
 package server.parser;
 
-import java.awt.BufferCapabilities.FlipContents;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 

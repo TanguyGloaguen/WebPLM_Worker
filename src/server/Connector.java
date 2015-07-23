@@ -26,10 +26,10 @@ public class Connector {
 			channelIn.queueDeclare(QUEUE_NAME_REQUEST, false, false, false, null);
 			channelOut.queueDeclare(QUEUE_NAME_REPLY, false, false, false, null);
 		} catch (IOException e) {
-			System.err.println(" [E] Host unknown. Aborting...");
+			Main.logger.log(2, "Host unknown. Aborting...");
 			System.exit(1);
 	    } catch (TimeoutException e) {
-			System.err.println(" [E] Host timed out. Aborting...");
+	    	Main.logger.log(2, "Host timed out. Aborting...");
 			System.exit(1);
 		}
 	}
