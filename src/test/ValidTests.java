@@ -1,21 +1,9 @@
 package test;
 
 import java.util.Locale;
-import java.lang.reflect.*;
-
-import server.Connector;
 import server.GameGest;
-import server.Main;
-
-import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.AMQP.BasicProperties;
 
-import plm.core.model.Game;
-import plm.core.model.LogHandler;
-import plm.core.model.lesson.Exercise;
-import server.ServerLogHandler;
-import server.listener.BasicListener;
-import server.listener.ResultListener;
 
 public class ValidTests {
 	private static GameGest gest = null;
@@ -43,11 +31,7 @@ public class ValidTests {
 	public static void main(String[] args) {
 		System.out.println(" [T] Starting tests.");
 		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
-		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
-		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
-		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
-		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
-		new ValidTests().initWithParams("lessons.welcome", "welcome.lessons.welcome.environment.Environment", "avance();");
+		new ValidTests().initWithParams("lessons.sort.basic", "lessons.sort.basic", "public void bubbleSort()  {boolean stop = false; while(!stop) { stop = true; for(int i = 0; i < getValueCount()-1;i++) { if(isSmaller(i+1, i)) { swap(i+1, i); stop = false;}}}}");
 	}
 	
 	public static void logInfos(String testName, String lessID, String exID, String code) {

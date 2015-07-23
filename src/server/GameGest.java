@@ -1,5 +1,6 @@
 package server;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.Semaphore;
 
@@ -8,6 +9,8 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import plm.core.model.Game;
 import plm.core.model.LogHandler;
 import plm.core.model.lesson.Exercise;
+import plm.core.model.lesson.Exercise.WorldKind;
+import plm.universe.World;
 import server.listener.BasicListener;
 import server.listener.ResultListener;
 
@@ -17,6 +20,7 @@ public class GameGest {
 	private BasicListener listener;
 	private ResultListener resultLstn;
 	public Semaphore endExercise = new Semaphore(0);
+	private ArrayList<BasicListener> lCumul = new ArrayList<BasicListener>();
 	
 	public GameGest(Connector connector) {
 		game = new Game("test", logger, Locale.FRENCH,"Java" , false);
@@ -41,8 +45,14 @@ public class GameGest {
 		}
 		game.switchLesson(lessonID, false);
 		game.switchExercise(exerciseID);
+		lCumul = new ArrayList<BasicListener>();
 		// Bind listener to game
 		listener.setWorld(game.getSelectedWorld());
+		for(World w : ((Exercise) game.getCurrentLesson().getCurrentExercise()).getWorlds(WorldKind.CURRENT)) {
+			BasicListener l = listener.clone();
+			l.setWorld(w);
+			lCumul.add(l);
+		}
 		resultLstn.setGame(game);
 	}
 	
@@ -63,14 +73,22 @@ public class GameGest {
 	
 	public void setProperties(BasicProperties properties) {
 		listener.setProps(properties);
+		for(BasicListener l : lCumul)
+			l.setProps(properties);
 		resultLstn.setProps(properties);
 	}
 	
 	public void sendStream() {
 		listener.send();
+		for(BasicListener l : lCumul)
+			l.send();
 	}
 	
 	public void free() {
 		endExercise.release();
+	}
+	
+	public void stop() {
+		game.quit();
 	}
 }

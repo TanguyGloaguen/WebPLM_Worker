@@ -8,7 +8,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Command;
 import com.rabbitmq.client.ConfirmListener;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.FlowListener;
 import com.rabbitmq.client.GetResponse;
@@ -160,7 +159,8 @@ public class ConnectorTest extends Connector {
 	
 		@Override
 		public void basicPublish(String arg0, String arg1, BasicProperties arg2, byte[] arg3) throws IOException {
-			System.out.println(" [C] Sent : " + new String(arg3,"UTF-8"));
+			String msg = (new String(arg3,"UTF-8"));
+			System.out.println(" [C] Sent : " + msg.substring(0, msg.length()>100?100:msg.length()));
 			System.out.println(" [C] On : " + arg1);
 		}
 	

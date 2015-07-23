@@ -44,13 +44,6 @@ public class Main {
 	public static void initData() {
 		System.out.println(" [D] Attempting to connect to " + host + ":" + port);
 		connector.init(host, Integer.parseInt(port));
-		try {
-			System.out.println(" [D] Creating game.");
-			gest = new GameGest(connector);
-		}
-		catch (Exception e) {
-			System.err.println(" [E] Error while creating game. Aborting...");
-		}
 	}
 	
 	/**
@@ -61,6 +54,13 @@ public class Main {
 		connector.prepDelivery();
 		System.out.println(" [D] Waiting for request.");
 		while (true) {
+			try {
+				System.out.println(" [D] Creating game.");
+				gest = new GameGest(connector);
+			}
+			catch (Exception e) {
+				System.err.println(" [E] Error while creating game. Aborting...");
+			}
 			QueueingConsumer.Delivery delivery = connector.getDelivery();
 			BasicProperties props = delivery.getProperties();
 		    BasicProperties replyProps = new BasicProperties
@@ -75,11 +75,11 @@ public class Main {
 			}
 			System.out.println(" [D] Received request from '" + props.getCorrelationId() + "'.");
 			RequestMsg request = RequestMsg.readMessage(message);
-			// Setting return data
-			gest.setProperties(replyProps);
 			System.out.println(" [D] Setting game properties.");
 			// Set game state
 			gest.setGameState(Locale.forLanguageTag(request.getLocale()), request.getLanguage(), request.getLessonID(), request.getExerciseID());
+			// Setting return data
+			gest.setProperties(replyProps);
 			// Put code in compiler.
 			System.out.println(" [D] Starting compilation.");
 			gest.setCode(request.getCode());
@@ -87,6 +87,7 @@ public class Main {
 			// Start the game.
 			gest.startGame(30);
 			System.out.println(" [D] Ended compilation.");
+			gest.stop();
 		}
 	}
 
