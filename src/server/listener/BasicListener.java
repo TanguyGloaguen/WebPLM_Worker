@@ -86,9 +86,9 @@ public class BasicListener implements IWorldView {
 		for(Entity element : l) {
 			if(element.isReadyToSend()) {
 				StreamMsg streamMsg = new StreamMsg(currWorld, element.getOperations());
-				JSONObject message = streamMsg.result();
 				element.getOperations().clear();
 				element.setReadyToSend(false);
+				JSONObject message = streamMsg.result();
 				send(message);
 			}
 		}
@@ -96,7 +96,7 @@ public class BasicListener implements IWorldView {
 
 	@Override
 	public void worldHasChanged() {
-		// TODO explain why it's empty.
+		// NO OP
 	}
 
 	/**
@@ -123,6 +123,7 @@ public class BasicListener implements IWorldView {
 		if(timer > timeout) {
 			this.execTime = System.currentTimeMillis();
 			send();
+			accu.clear();
 		}
 	}
 	
