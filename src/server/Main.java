@@ -1,25 +1,14 @@
 package server;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Locale;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeoutException;
 
 import plm.core.model.Game;
 import plm.core.model.LogHandler;
-import plm.core.model.lesson.Exercise;
-import server.listener.BasicListener;
-import server.listener.ResultListener;
 import server.parser.*;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
-import com.rabbitmq.client.ShutdownSignalException;
 
 /**
  * The main class. This should be the entry point of the Judge.
@@ -43,7 +32,7 @@ public class Main {
 	 * Initialize the connection with the message queue, as well as the {@link Game} instance.
 	 */
 	public static void initData() {
-		logger.log(0, "Attempting to connect to " + host + ":" + port);
+		logger.log(0, "Attempting to connect [" + host + ":" + port + "]");
 		connector.init(host, Integer.parseInt(port));
 	}
 	
@@ -53,7 +42,6 @@ public class Main {
 	public static void mainLoop() {
 		logger.log(0, "Retrieving request handler.");
 		connector.prepDelivery();
-		logger.log(0, "Waiting for request.");
 		while (true) {
 			try {
 				logger.log(0, "Creating game.");
@@ -62,6 +50,7 @@ public class Main {
 			catch (Exception e) {
 				logger.log(2, "Error while creating game. Aborting...");
 			}
+			logger.log(0, "Waiting for request [" + host + ":" + port + "]");
 			QueueingConsumer.Delivery delivery = connector.getDelivery();
 			BasicProperties props = delivery.getProperties();
 		    BasicProperties replyProps = new BasicProperties
