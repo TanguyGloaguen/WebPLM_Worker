@@ -57,5 +57,5 @@ jar cfm0 judge_gen.jar manifest_gen.txt -C bin_gen . lib/commons-cli-1.1.jar lib
 ```
 
 then, you can simply launch the `java -jar judge.gen.jar` command to generate both lessonWorld, lessonDemos and webPlmData folders content.
-You can also add the "-w", "-o" or "-d" options to 
+You can also add the "-w", "-o" or "-d" options to change respectively the output world, demos and data folders.
 

@@ -56,6 +56,7 @@ public class Main {
 		    BasicProperties replyProps = new BasicProperties
                     .Builder()
                     .correlationId(props.getCorrelationId())
+                    .expiration("60000")
                     .build();
 			String message = "";
 			try {
