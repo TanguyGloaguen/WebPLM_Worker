@@ -70,7 +70,6 @@ public class ResultListener implements GameStateListener {
 	@Override
 	public void stateChanged(GameState state) {
 		switch(state) {
-			case DEMO_ENDED :
 			case EXECUTION_ENDED :
 				Exercise e = (Exercise) currGame.getCurrentLesson().getCurrentExercise();
 				parent.sendStream();
