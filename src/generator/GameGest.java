@@ -15,6 +15,7 @@ import org.json.simple.JSONObject;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 
+import generator.parser.DataParser;
 import plm.core.model.Game;
 import plm.core.model.LogHandler;
 import plm.core.model.lesson.Exercise;
@@ -77,7 +78,7 @@ public class GameGest {
 	}
 	
 	public void startGame() {
-		Generator.generateData(exerciseID, ((Exercise) game.getCurrentLesson().getCurrentExercise()).getWorlds(WorldKind.INITIAL));
+		DataParser.generateData(exerciseID, ((Exercise) game.getCurrentLesson().getCurrentExercise()).getWorlds(WorldKind.INITIAL));
 		game.startExerciseDemoExecution();
 		try {
 			endExercise.acquire();
@@ -127,7 +128,7 @@ public class GameGest {
 	public Collection<String> getLessons() {
 		Collection<String> res = new ArrayList<String>();
 		Collection<Lesson> lessons = game.getLessons();
-		Generator.generateData(lessons);
+		DataParser.generateData(lessons);
 		for(Lesson l : lessons) {
 			res.add("lessons." + l.getId());
 		}
@@ -137,7 +138,7 @@ public class GameGest {
 	public Collection<String> getExercises(String lesson) {
 		game.switchLesson(lesson, false);
 		Collection<Lecture> exercises = game.getCurrentLesson().getRootLectures();
-		Generator.generateData(lesson, exercises);
+		DataParser.generateData(lesson, exercises);
 		return massConvert(exercises);
 	}
 	

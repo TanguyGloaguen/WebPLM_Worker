@@ -25,7 +25,7 @@ public class GameGest {
 	
 	public GameGest(Connector connector, LogHandler logger) {
 		game = new Game("test", logger, Locale.FRENCH,"Java" , false);
-		listener = new BasicListener(connector, 500);
+		listener = new BasicListener(connector, 1000);
 		resultLstn = new ResultListener(connector, this);
 		listenerOut = new ListenerOutStream(System.out, listener);
 		PrintStream outStream = new PrintStream(listenerOut, true);  //Direct to MyOutputStream, autoflush
